@@ -677,6 +677,7 @@ SERVER                      : 'SERVER';
 SESSION                     : 'SESSION';
 SHARE                       : 'SHARE';
 SHARED                      : 'SHARED';
+SHARDKEY                    : 'SHARDKEY';
 SIGNED                      : 'SIGNED';
 SIMPLE                      : 'SIMPLE';
 SLAVE                       : 'SLAVE';

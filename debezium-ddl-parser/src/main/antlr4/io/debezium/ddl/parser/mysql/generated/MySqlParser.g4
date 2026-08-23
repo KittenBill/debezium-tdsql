@@ -268,7 +268,11 @@ createTable
     )? partitionDefinitions? keyViolate = (IGNORE | REPLACE)? AS? selectStatement # queryCreateTable
     | CREATE TEMPORARY? TABLE ifNotExists? tableName createDefinitions (
         tableOption (','? tableOption)*
-    )? partitionDefinitions? # columnCreateTable
+    )? partitionDefinitions? shardKeyClause? # columnCreateTable
+    ;
+
+shardKeyClause
+    : SHARDKEY '=' uid
     ;
 
 createTablespaceInnodb
@@ -3076,6 +3080,7 @@ keywordsCanBeId
     | SET_USER_ID
     | SHARE
     | SHARED
+    | SHARDKEY
     | SHOW_ROUTINE
     | SIGNED
     | SIMPLE
