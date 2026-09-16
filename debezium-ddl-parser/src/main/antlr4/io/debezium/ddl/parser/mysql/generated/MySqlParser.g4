@@ -268,11 +268,23 @@ createTable
     )? partitionDefinitions? keyViolate = (IGNORE | REPLACE)? AS? selectStatement # queryCreateTable
     | CREATE TEMPORARY? TABLE ifNotExists? tableName createDefinitions (
         tableOption (','? tableOption)*
-    )? partitionDefinitions? shardKeyClause? # columnCreateTable
+    )? shardKeyClause? partitionDefinitions? tdsqlDistributedByClause? # columnCreateTable
     ;
 
 shardKeyClause
     : SHARDKEY '=' uid
+    ;
+
+tdsqlDistributedByClause
+    : TDSQL_DISTRIBUTED BY distributionType = (RANGE | LIST) '(' uid ')' (
+        '(' tdsqlDistributionDefinition (',' tdsqlDistributionDefinition)* ')'
+    )?
+    ;
+
+tdsqlDistributionDefinition
+    : uid VALUES LESS THAN '(' partitionDefinerAtom (',' partitionDefinerAtom)* ')'
+    | uid VALUES LESS THAN partitionDefinerAtom
+    | uid VALUES IN '(' partitionDefinerAtom (',' partitionDefinerAtom)* ')'
     ;
 
 createTablespaceInnodb
@@ -553,7 +565,9 @@ tablespaceStorage
 
 partitionDefinitions
     : PARTITION BY partitionFunctionDefinition (PARTITIONS count = decimalLiteral)? (
-        SUBPARTITION BY subpartitionFunctionDefinition (SUBPARTITIONS subCount = decimalLiteral)?
+        SUBPARTITION BY subpartitionFunctionDefinition (SUBPARTITIONS subCount = decimalLiteral)? (
+            SUBPARTITION TEMPLATE '(' subpartitionDefinition (',' subpartitionDefinition)* ')'
+        )?
     )? ('(' partitionDefinition (',' partitionDefinition)* ')')?
     ;
 
@@ -567,6 +581,8 @@ partitionFunctionDefinition
 subpartitionFunctionDefinition
     : LINEAR? HASH '(' expression ')'                                    # subPartitionFunctionHash
     | LINEAR? KEY (ALGORITHM '=' algType = ('1' | '2'))? '(' uidList ')' # subPartitionFunctionKey
+    | RANGE ('(' expression ')' | COLUMNS '(' uidList ')')               # subPartitionFunctionRange
+    | LIST ('(' expression ')' | COLUMNS '(' uidList ')')                # subPartitionFunctionList
     ;
 
 partitionDefinition
@@ -596,7 +612,11 @@ partitionDefinerVector
     ;
 
 subpartitionDefinition
-    : SUBPARTITION uid partitionOption*
+    : SUBPARTITION uid (
+        VALUES LESS THAN '(' partitionDefinerAtom (',' partitionDefinerAtom)* ')'
+        | VALUES LESS THAN partitionDefinerAtom
+        | VALUES IN '(' partitionDefinerAtom (',' partitionDefinerAtom)* ')'
+    )? partitionOption*
     ;
 
 partitionOption
@@ -3128,7 +3148,9 @@ keywordsCanBeId
     | TABLESPACE
     | TABLE_ENCRYPTION_ADMIN
     | TABLE_TYPE
+    | TDSQL_DISTRIBUTED
     | TELEMETRY_LOG_ADMIN
+    | TEMPLATE
     | TEMPORARY
     | TEMPTABLE
     | THAN

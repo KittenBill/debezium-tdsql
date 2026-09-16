@@ -715,6 +715,8 @@ SWITCHES                    : 'SWITCHES';
 TABLE_NAME                  : 'TABLE_NAME';
 TABLESPACE                  : 'TABLESPACE';
 TABLE_TYPE                  : 'TABLE_TYPE';
+TDSQL_DISTRIBUTED           : 'TDSQL_DISTRIBUTED';
+TEMPLATE                    : 'TEMPLATE';
 TEMPORARY                   : 'TEMPORARY';
 TEMPTABLE                   : 'TEMPTABLE';
 THAN                        : 'THAN';
