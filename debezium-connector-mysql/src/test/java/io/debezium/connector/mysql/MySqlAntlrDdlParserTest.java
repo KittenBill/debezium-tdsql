@@ -159,6 +159,55 @@ public class MySqlAntlrDdlParserTest
         assertThat(table.primaryKeyColumnNames()).containsExactly("ecny_cust_no", "voucher_no", "tran_dt", "tran_wallet_id");
     }
 
+    @Test
+    public void shouldParseTdsqlDistributedByHashCreateTable() {
+        var listener = new SimpleDdlParserListener();
+        var parser = new MySqlDdlParserWithSimpleTestListener(listener);
+        var tables = new Tables();
+
+        var ddl = "create table `my_table`(\n"
+                + "    `col1` varchar(50) COLLATE utf8mb4_bin NOT NULL COMMENT '1',\n"
+                + "    `col2` varchar(50) COLLATE utf8mb4_bin NOT NULL COMMENT '2',\n"
+                + "    primary key (`col1`, `col2`)\n"
+                + ") engine=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='my table'\n"
+                + "TDSQL_DISTRIBUTED BY HASH(`col1`)";
+
+        parser.parse(ddl, tables);
+
+        assertThat(parser.getParsingExceptionsFromWalker()).isEmpty();
+        var table = tables.forTable(new TableId(null, null, "my_table"));
+        assertThat(table).isNotNull();
+        assertThat(table.retrieveColumnNames()).containsExactly("col1", "col2");
+        assertThat(table.primaryKeyColumnNames()).containsExactly("col1", "col2");
+    }
+
+    @Test
+    public void shouldParseTdsqlDistributedByHashWithTdsqlPartitionCreateTable() {
+        var listener = new SimpleDdlParserListener();
+        var parser = new MySqlDdlParserWithSimpleTestListener(listener);
+        var tables = new Tables();
+
+        var ddl = "create table `my_table`(\n"
+                + "    `col1` varchar(50) COLLATE utf8mb4_bin NOT NULL COMMENT '1',\n"
+                + "    `col2` varchar(50) COLLATE utf8mb4_bin NOT NULL COMMENT '2',\n"
+                + "    `date_col` date not null comment '3',\n"
+                + "    primary key (`col1`, `col2`)\n"
+                + ") engine=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin COMMENT='my table'\n"
+                + "TDSQL_DISTRIBUTED BY HASH(`col1`)\n"
+                + "TDSQL_PARTITION BY RANGE (tdsql_month(`date_col`))\n"
+                + "(PARTITION P202501 VALUES LESS THAN (202501) ENGINE = InnoDB,\n"
+                + " PARTITION P202502 VALUES LESS THAN (202502) ENGINE = InnoDB,\n"
+                + " PARTITION P202503 VALUES LESS THAN (202503) ENGINE = InnoDB)";
+
+        parser.parse(ddl, tables);
+
+        assertThat(parser.getParsingExceptionsFromWalker()).isEmpty();
+        var table = tables.forTable(new TableId(null, null, "my_table"));
+        assertThat(table).isNotNull();
+        assertThat(table.retrieveColumnNames()).containsExactly("col1", "col2", "date_col");
+        assertThat(table.primaryKeyColumnNames()).containsExactly("col1", "col2");
+    }
+
     public static class MySqlDdlParserWithSimpleTestListener extends MySqlAntlrDdlParser {
         MySqlDdlParserWithSimpleTestListener(DdlChanges changesListener) {
             this(changesListener, false);

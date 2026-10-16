@@ -716,6 +716,7 @@ TABLE_NAME                  : 'TABLE_NAME';
 TABLESPACE                  : 'TABLESPACE';
 TABLE_TYPE                  : 'TABLE_TYPE';
 TDSQL_DISTRIBUTED           : 'TDSQL_DISTRIBUTED';
+TDSQL_PARTITION             : 'TDSQL_PARTITION';
 TEMPLATE                    : 'TEMPLATE';
 TEMPORARY                   : 'TEMPORARY';
 TEMPTABLE                   : 'TEMPTABLE';

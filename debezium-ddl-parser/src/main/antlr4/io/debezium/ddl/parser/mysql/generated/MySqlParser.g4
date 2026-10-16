@@ -268,7 +268,7 @@ createTable
     )? partitionDefinitions? keyViolate = (IGNORE | REPLACE)? AS? selectStatement # queryCreateTable
     | CREATE TEMPORARY? TABLE ifNotExists? tableName createDefinitions (
         tableOption (','? tableOption)*
-    )? shardKeyClause? partitionDefinitions? tdsqlDistributedByClause? # columnCreateTable
+    )? shardKeyClause? partitionDefinitions? tdsqlDistributedByClause? tdsqlPartitionByClause? # columnCreateTable
     ;
 
 shardKeyClause
@@ -276,7 +276,7 @@ shardKeyClause
     ;
 
 tdsqlDistributedByClause
-    : TDSQL_DISTRIBUTED BY distributionType = (RANGE | LIST) '(' uid ')' (
+    : TDSQL_DISTRIBUTED BY distributionType = (RANGE | LIST | HASH) '(' uid ')' (
         '(' tdsqlDistributionDefinition (',' tdsqlDistributionDefinition)* ')'
     )?
     ;
@@ -285,6 +285,12 @@ tdsqlDistributionDefinition
     : uid VALUES LESS THAN '(' partitionDefinerAtom (',' partitionDefinerAtom)* ')'
     | uid VALUES LESS THAN partitionDefinerAtom
     | uid VALUES IN '(' partitionDefinerAtom (',' partitionDefinerAtom)* ')'
+    ;
+
+tdsqlPartitionByClause
+    : TDSQL_PARTITION BY partitionType = (RANGE | LIST) '(' expression ')' (
+        '(' partitionDefinition (',' partitionDefinition)* ')'
+    )?
     ;
 
 createTablespaceInnodb
@@ -3149,6 +3155,7 @@ keywordsCanBeId
     | TABLE_ENCRYPTION_ADMIN
     | TABLE_TYPE
     | TDSQL_DISTRIBUTED
+    | TDSQL_PARTITION
     | TELEMETRY_LOG_ADMIN
     | TEMPLATE
     | TEMPORARY
